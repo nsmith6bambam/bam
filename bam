@@ -1,0 +1,102 @@
+import sqlite3
+import os
+
+def create_database():
+    conn = sqlite3.connect("restaurant_menu.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS menu (
+            item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_name TEXT NOT NULL,
+            price REAL NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+    def populate_menu():
+    conn = sqlite3.connect("restaurant_menu.db")
+    cursor = conn.cursor()
+
+    menu_items = [
+        ("Pizza", 12.99),
+        ("Pasta", 9.99),
+        ("Salad", 8.50),
+        ("Steak", 24.95),
+        ("Burger", 10.99)
+    ]
+
+    cursor.executemany("INSERT INTO menu (item_name, price) VALUES (?, ?)", menu_items)
+
+    conn.commit()
+    conn.close()
+
+
+    def display_menu():
+    conn = sqlite3.connect("restaurant_menu.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT item_id, item_name, price FROM menu")
+    menu_items = cursor.fetchall()
+
+    print("Menu:")
+    for item in menu_items:
+        print(f"{item[0]}: {item[1]} - ${item[2]}")
+
+    conn.close()
+
+    def take_orders():
+    conn = sqlite3.connect("restaurant_menu.db")
+    cursor = conn.cursor()
+
+    order = []
+    total_cost = 0
+
+    while True:
+        display_menu()
+        item_id = int(input("Enter item ID (0 to finish): "))
+
+        if item_id == 0:
+            break
+
+        cursor.execute("SELECT item_name, price FROM menu WHERE item_id = ?", (item_id,))
+        item = cursor.fetchone()
+
+        if item:
+            order.append(item)
+            total_cost += item[1]
+            print(f"{item[0]} added to your order.")
+        else:
+            print("Invalid item ID.")
+
+    print("\nYour Order:")
+    for item in order:
+        print(f"{item[0]} - ${item[1]}")
+
+    print(f"Total Cost: ${total_cost}")
+
+    conn.close()
+
+   def main():
+    create_database()
+    populate_menu()
+
+    while True:
+        print("\n1. View Menu")
+        print("2. Place Order")
+        print("3. Exit")
+        choice = int(input("Enter your choice: "))
+
+        if choice == 1:
+            display_menu()
+        elif choice == 2:
+            take_orders()
+        elif choice == 3:
+            break
+        else:
+            print("Invalid choice.")
+
+if __name__ == "__main__":
+    main() 
